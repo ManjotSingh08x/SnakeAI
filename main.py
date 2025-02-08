@@ -1,10 +1,13 @@
 import pygame
 import random
 import time
+import settings
 from snake import Snake
 from food import Food
+from maze_generator import Hamiltonian_Maze
 
-WINDOW_SIZE = (800,600)
+WINDOW_SIZE = settings.window_size
+CELL_SIZE = settings.cell_size
 
 MOVE_UP = [0,-1]
 MOVE_DOWN = [0,1]
@@ -24,6 +27,7 @@ class Game:
         self.font = pygame.font.Font(None, 30)
 
         self.clock = pygame.time.Clock()
+        self.hamitonian_maze = Hamiltonian_Maze(self.height // CELL_SIZE, self.width // CELL_SIZE, CELL_SIZE, self.screen)
 
         self.running = True
         self.food = Food(20 , 15)
@@ -36,7 +40,7 @@ class Game:
         if self.snake.arr[0][0] == self.food.pos[0] and self.snake.arr[0][1] == self.food.pos[1]:
             self.score +=1
             self.food.spawn(self.snake.arr)
-            self.snake.arr.append([self.snake.arr[-1][0]+self.snake.dir[0],self.snake.arr[-1][1]+self.snake.dir[1]])
+            self.snake.arr.append([self.food.pos[0], self.food.pos[1]])
             self.snake.length +=1
 
     def snake_collision(self):
@@ -89,6 +93,7 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.snake.draw(self.screen)
             self.food.render(self.screen)
+            self.hamitonian_maze.display()
 
 
 

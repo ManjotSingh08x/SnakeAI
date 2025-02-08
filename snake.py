@@ -1,7 +1,8 @@
 import pygame
+import settings
 
-CELL_SIZE = 20
-WINDOW_SIZE = (800,600)
+CELL_SIZE = settings.cell_size
+WINDOW_SIZE = settings.window_size
 RED = (200 , 0 , 0)
 GREEN = (0 , 160 , 0)
 
