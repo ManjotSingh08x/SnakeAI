@@ -13,10 +13,10 @@ MOVE_RIGHT = [1,0]
 
 P = 1
 
-VEL = 10
+VEL = 5
 
 class Snake:
-    def __init__(self , arr):
+    def __init__(self , arr, path):
         self.arr = arr
         self.length = len(self.arr)
         self.head_x = self.arr[0][0]
@@ -24,6 +24,7 @@ class Snake:
         self.dir = MOVE_UP
         self.ticks = 0
         self.velocity = VEL
+        self.path = path
 
     def draw(self , screen):
         for i , section in enumerate(self.arr):
@@ -61,13 +62,16 @@ class Snake:
             # print(self.arr)
 
     def future_head(self):
-        naive_future = [self.arr[0][0] + self.dir[0] , self.arr[0][1]+self.dir[1]]
-        if naive_future[0]*CELL_SIZE >= WINDOW_SIZE[0]:
-            naive_future[0] -= WINDOW_SIZE[0]//CELL_SIZE 
-        if naive_future[1]*CELL_SIZE >= WINDOW_SIZE[1]:
-            naive_future[1] -= WINDOW_SIZE[1]//CELL_SIZE
-        if naive_future[0] < 0:
-            naive_future[0] += WINDOW_SIZE[0]//CELL_SIZE
-        if naive_future[1] < 0:
-            naive_future[1] += WINDOW_SIZE[1]//CELL_SIZE
-        return naive_future
+        # naive_future = [self.arr[0][0] + self.dir[0] , self.arr[0][1]+self.dir[1]]
+        # if naive_future[0]*CELL_SIZE >= WINDOW_SIZE[0]:
+        #     naive_future[0] -= WINDOW_SIZE[0]//CELL_SIZE 
+        # if naive_future[1]*CELL_SIZE >= WINDOW_SIZE[1]:
+        #     naive_future[1] -= WINDOW_SIZE[1]//CELL_SIZE
+        # if naive_future[0] < 0:
+        #     naive_future[0] += WINDOW_SIZE[0]//CELL_SIZE
+        # if naive_future[1] < 0:
+        #     naive_future[1] += WINDOW_SIZE[1]//CELL_SIZE
+        # return naive_future
+        future_head_index= self.path.index(self.arr[0]) + 1
+        
+        return self.path[future_head_index % len(self.path)]

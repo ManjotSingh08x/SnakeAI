@@ -16,34 +16,60 @@ class Hamiltonian_Maze:
         self.color = (255, 255, 255)
         self.prim_rows = self.rows // 2
         self.prim_cols = self.columns // 2 
-        self.maze = self.generate_maze()
         self.directions = self.prim_maze()
         self.hamiltonian_path = self.hamiltonian_cycle(self.directions)
+        self.maze = self.path_generator(self.hamiltonian_path)
+        self.inverted_maze = self.inverted_path(self.maze)
+        # self.generate_maze()
         
-    def display(self):
-        for i in range(len(self.maze)):
-            pygame.draw.line(self.screen, self.color, (self.maze[i-1][0] * self.cell_size + self.cell_size //2, self.maze[i-1][1] * self.cell_size + self.cell_size //2),
-                             (self.maze[i][0] * self.cell_size + self.cell_size //2, self.maze[i][1] * self.cell_size + self.cell_size //2), width=2)
+        
+    def display_all(self):
+
         for key in self.directions:
             for value in self.directions[key]:
+                color = (0,0,255)
                 start_point = (key[0]*self.cell_size*2 + self.cell_size, key[1]*self.cell_size*2 + self.cell_size)
                 end_point = ((key[0]+ value[0])*self.cell_size*2 + self.cell_size, (key[1]+ value[1])*self.cell_size*2 + self.cell_size)
-                pygame.draw.line(self.screen, self.color, start_point, end_point, width=3)
+                pygame.draw.line(self.screen, color, start_point, end_point, width=3)
+                
         for key in self.hamiltonian_path:
             for value in self.hamiltonian_path[key]:
                 color = (255, 0, 0)
+                if len(self.hamiltonian_path[key]) > 1:
+                    color = (0,255,0)
                 start_point = (key[0]*self.cell_size + self.cell_size//2, key[1]*self.cell_size + self.cell_size//2)
                 end_point = ((0+ value[0])*self.cell_size + self.cell_size//2, (0+ value[1])*self.cell_size + self.cell_size//2)
-                pygame.draw.line(self.screen, color, start_point, end_point)
+                pygame.draw.line(self.screen, color, start_point, end_point, width=1)
+                
+        for i in range(self.columns//2):
+            start_point = (i*settings.cell_size*2,0)
+            end_point = (i * settings.cell_size*2, settings.window_size[0]-1)
+            pygame.draw.line(self.screen, self.color, start_point, end_point)
+        
+        for i in range(self.rows//2):
+            start_point = (0, i*settings.cell_size*2)
+            end_point = (settings.window_size[1]-1,i * settings.cell_size*2 )
+            pygame.draw.line(self.screen, self.color, start_point, end_point)
+            
+    def display_path(self):
+        for i in range(len(self.maze)):
+            pygame.draw.line(self.screen, self.color, (self.maze[i-1][0] * self.cell_size + self.cell_size //2, self.maze[i-1][1] * self.cell_size + self.cell_size //2),
+                             (self.maze[i][0] * self.cell_size + self.cell_size //2, self.maze[i][1] * self.cell_size + self.cell_size //2), width=2)
                 
     def generate_maze(self):
-        directions = self.prim_maze()
-        hamiltonian_cycle = self.hamiltonian_cycle(directions)
-        path = self.path_generator(hamiltonian_cycle)
-        # print(directions)
-        # print(hamiltonian_cycle)
-        print(path)
-        return path
+        print(self.directions)
+        print(self.hamiltonian_path)
+        print(self.maze)
+        
+        
+    def display_dict(self, directions):
+        for key in directions:
+            
+            for value in directions[key]:
+                color = (255,0,0)
+                start_point = (key[0], key[1])
+                end_point = ((key[0]+ value[0]), (key[1]+ value[1]))
+                print(start_point, end_point)
         
     def prim_maze(self):
         directions = dict()
@@ -75,8 +101,8 @@ class Hamiltonian_Maze:
             
             # if the current cell is top-left corner
             elif x_position == 0 and y_position == 0: 
-                adjacent_cells.add((x_position, y_position + 1))
                 adjacent_cells.add((x_position + 1, y_position))
+                adjacent_cells.add((x_position, y_position + 1))
             
             # if the current cell is bottom-left corner
             elif x_position == 0 and y_position == self.prim_rows -1:
@@ -90,7 +116,7 @@ class Hamiltonian_Maze:
                 adjacent_cells.add((x_position + 1, y_position))
                 
             # if the current cell is top right corner of the gird
-            elif  y_position == 0 and x_position == self.prim_cols -1:
+            elif  x_position == self.prim_cols -1 and y_position == 0:
                 adjacent_cells.add((x_position, y_position + 1))
                 adjacent_cells.add((x_position - 1, y_position))
                 
@@ -113,12 +139,15 @@ class Hamiltonian_Maze:
                 
             else:
                 adjacent_cells.add((x_position, y_position - 1))
-                adjacent_cells.add((x_position - 1, y_position))
                 adjacent_cells.add((x_position + 1, y_position))
+                adjacent_cells.add((x_position - 1, y_position))
                 
             while current_cell:
                 # choose a random current cell
-                current_cell = (adjacent_cells.pop())
+
+                current_cell = random.choice(tuple(adjacent_cells))
+                adjacent_cells.remove(current_cell)
+
                 
                 if current_cell not in visited:
                     
@@ -312,25 +341,39 @@ class Hamiltonian_Maze:
              
             if previous_cell in graph and (previous_cell[0] + 1, previous_cell[1]) in graph[previous_cell] and previous_direction != MOVE_LEFT:
                 next_cell = (previous_cell[0] + 1, previous_cell[1])
-                path.append(next_cell)
-                previous_cell = next_cell
                 previous_direction = MOVE_RIGHT
-            elif previous_cell in graph and (previous_cell[0], previous_cell[1] + 1) in graph[previous_cell] and previous_cell != MOVE_UP:
-                next_cell = (previous_cell[0], previous_cell[1] + 1)
-                path.append(next_cell)
+                extra_cell = [next_cell[0], next_cell[1]]
+                path.append(extra_cell)
                 previous_cell = next_cell
+            elif previous_cell in graph and (previous_cell[0], previous_cell[1] + 1) in graph[previous_cell] and previous_direction != MOVE_UP:
+                next_cell = (previous_cell[0], previous_cell[1] + 1)
                 previous_direction = MOVE_DOWN
+                extra_cell = [next_cell[0], next_cell[1]]
+                path.append(extra_cell)
+                previous_cell = next_cell
             elif (previous_cell[0] - 1, previous_cell[1]) in graph and previous_cell in graph[previous_cell[0] - 1, previous_cell[1]] and previous_direction != MOVE_RIGHT:
                 next_cell = (previous_cell[0] - 1, previous_cell[1])
-                path.append(next_cell)
-                previous_cell = next_cell
                 previous_direction = MOVE_LEFT
+                extra_cell = [next_cell[0], next_cell[1]]
+                path.append(extra_cell)
+                previous_cell = next_cell
             else:
                 next_cell = (previous_cell[0], previous_cell[1] - 1)
-                path.append(next_cell)
-                previous_cell = next_cell
                 previous_direction = MOVE_UP
+                extra_cell = [next_cell[0], next_cell[1]]
+                path.append(extra_cell)
+                previous_cell = next_cell
+                
+        path[0]= [0,0]
         # print(path)
+        self.inverted_path(path)
         return path
     
+    def inverted_path(self, path):
+        inverted_path = [[0 for _ in range(self.rows)] for _ in range(self.columns)]
+        for i, location in enumerate(path):
+            inverted_path[location[0]][location[1]] = i
+            
+        return inverted_path
+            
 

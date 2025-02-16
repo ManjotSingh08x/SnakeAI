@@ -5,6 +5,7 @@ import settings
 from snake import Snake
 from food import Food
 from maze_generator import Hamiltonian_Maze
+from shortest_path import ShortestPath
 
 WINDOW_SIZE = settings.window_size
 CELL_SIZE = settings.cell_size
@@ -30,11 +31,13 @@ class Game:
         self.hamitonian_maze = Hamiltonian_Maze(self.height // CELL_SIZE, self.width // CELL_SIZE, CELL_SIZE, self.screen)
 
         self.running = True
-        self.food = Food(20 , 15)
-        self.snake = Snake([[20,20] , [20,21] , [21,21]])
+        self.snake = Snake([[self.height // (CELL_SIZE*2), self.width // (CELL_SIZE*2)],[self.height // (CELL_SIZE*2)-1, self.width // (CELL_SIZE*2)-1]], self.hamitonian_maze.maze)
+        self.food = Food(self.snake.arr)
         self.score = 0
         self.game_over = False
         self.init_time = time.time()
+        self.shortest_path = ShortestPath(self.screen, self.height // CELL_SIZE, self.width // CELL_SIZE)
+        # self.shortest_path.create_grid(self.snake.arr, )
 
     def check_food_collision(self):
         if self.snake.arr[0][0] == self.food.pos[0] and self.snake.arr[0][1] == self.food.pos[1]:
@@ -44,8 +47,7 @@ class Game:
             self.snake.length +=1
 
     def snake_collision(self):
-        future = self.snake.future_head()
-        if future in self.snake.arr:
+        if self.snake.arr[0] in self.snake.arr[1:]:
             self.game_over = True
             
 
@@ -54,7 +56,7 @@ class Game:
             self.handle_events()
             self.update()
             self.render()
-            self.clock.tick(144)
+            self.clock.tick(settings.clock_speed)
 
 
     def handle_events(self):
@@ -84,6 +86,8 @@ class Game:
         self.check_food_collision()
         self.snake_collision()
         self.snake.move()
+        self.shortest_path.calculate_path(self.snake.arr, self.food.pos)
+        
 
     def render(self):
 
@@ -93,16 +97,15 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.snake.draw(self.screen)
             self.food.render(self.screen)
-            self.hamitonian_maze.display()
+            self.hamitonian_maze.display_all()
+            self.hamitonian_maze.display_path()
 
 
+            # text_surface = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+            # self.screen.blit(text_surface, (20, 20))
 
-
-            text_surface = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
-            self.screen.blit(text_surface, (20, 20))
-
-            atime = self.font.render(f"Time: {formatted_time}", True, (255, 255, 255))
-            self.screen.blit(atime, (WINDOW_SIZE[0]-atime.get_width()-20, 20))
+            # atime = self.font.render(f"Time: {formatted_time}", True, (255, 255, 255))
+            # self.screen.blit(atime, (WINDOW_SIZE[0]-atime.get_width()-20, 20))
         
         else:
             self.screen.fill((12,12,12))

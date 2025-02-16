@@ -8,10 +8,12 @@ RED = (200 , 0 , 0)
 
 
 class Food:
-    def __init__(self , x , y):
-        self.pos = [x,y]
+    def __init__(self, snake_arr):
+        self.pos = [0,0]
+        self.spawn(snake_arr)
 
     def render(self , screen):
+
         pygame.draw.rect(screen , RED , (self.pos[0]*CELL_SIZE ,self.pos[1]*CELL_SIZE , CELL_SIZE, CELL_SIZE ))
 
     def spawn(self , snake_arr):
